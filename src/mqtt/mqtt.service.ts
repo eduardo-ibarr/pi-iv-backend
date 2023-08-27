@@ -3,11 +3,25 @@ import { ConfigService } from '@nestjs/config';
 import { readFileSync, writeFileSync } from 'fs';
 import { MqttClient, connect } from 'mqtt';
 import * as path from 'path';
+import {
+  MqttPublishError,
+  MqttLoadSubscriptionsError,
+  MqttSubscriptionError,
+  MqttUpdateSubscriptionsError,
+  MqttConnectionError,
+  MqttUnsubscribeError,
+} from 'src/exceptions/mqtt';
 
 @Injectable()
 export class MqttService {
   private client: MqttClient;
   private savedSubscriptions: string[] = [];
+  private envs: string[] = [
+    'mqtt.broker',
+    'mqtt.username',
+    'mqtt.password',
+    'mqtt.ca',
+  ];
 
   private readonly subscriptionsFile = path.join(
     __dirname,
@@ -15,9 +29,7 @@ export class MqttService {
   );
 
   constructor(private configService: ConfigService) {
-    const envs = ['mqtt.broker', 'mqtt.username', 'mqtt.password', 'mqtt.ca'];
-
-    const [broker, username, password, ca] = envs.map((env) =>
+    const [broker, username, password, ca] = this.envs.map((env) =>
       this.configService.get<string>(env),
     );
 
@@ -32,16 +44,17 @@ export class MqttService {
     });
 
     this.client.on('connect', () => {
-      console.log('Conectado ao broker MQTT');
+      console.log('Connected to MQTT broker.');
+    });
+
+    this.client.on('error', (error) => {
+      throw new MqttConnectionError(error.message);
     });
 
     this.savedSubscriptions = this.loadSubscriptions();
 
-    console.log(this.savedSubscriptions);
-
     for (const topic of this.savedSubscriptions) {
-      this.client.subscribe(topic);
-      console.log(topic);
+      this.subscribe(topic);
     }
   }
 
@@ -51,8 +64,7 @@ export class MqttService {
       const subscriptions = JSON.parse(data).subscriptions;
       return subscriptions;
     } catch (error) {
-      console.log(error);
-      return [];
+      throw new MqttLoadSubscriptionsError(error.message);
     }
   }
 
@@ -61,38 +73,64 @@ export class MqttService {
       subscriptions: newSubscriptions,
     };
 
-    writeFileSync(
-      this.subscriptionsFile,
-      JSON.stringify(data, null, 2),
-      'utf8',
-    );
+    try {
+      writeFileSync(
+        this.subscriptionsFile,
+        JSON.stringify(data, null, 2),
+        'utf8',
+      );
+
+      console.log('Subscriptions updated and saved successfully.');
+    } catch (error) {
+      throw new MqttUpdateSubscriptionsError(error.message);
+    }
   }
 
   publish(topic: string, message: string): void {
-    this.client.publish(topic, message);
+    this.client.publish(topic, message, (error) => {
+      if (error) {
+        throw new MqttPublishError(topic, error.message);
+      } else {
+        console.log(`Message published to topic ${topic}: ${message}`);
+      }
+    });
   }
 
   subscribe(topic: string): void {
-    this.client.subscribe(topic);
-    this.client.on('message', (receivedTopic, message) => {
-      if (receivedTopic === topic) {
-        console.log(`Mensagem recebida em ${topic}: ${message}`);
-        // Faça algo com a mensagem recebida
-      }
-    });
+    try {
+      this.client.subscribe(topic);
+      console.log(`Subscribed to the topic ${topic}.`);
 
-    if (!this.savedSubscriptions.includes(topic)) {
-      this.savedSubscriptions.push(topic);
-      this.updateAndSaveSubscriptions(this.savedSubscriptions);
+      this.client.on('message', (receivedTopic, message) => {
+        if (receivedTopic === topic) {
+          console.log(`Message received from topic ${topic}: ${message}`);
+          // Faça algo com a mensagem recebida
+        }
+      });
+
+      if (!this.savedSubscriptions.includes(topic)) {
+        this.savedSubscriptions.push(topic);
+        this.updateAndSaveSubscriptions(this.savedSubscriptions);
+      }
+    } catch (error) {
+      throw new MqttSubscriptionError(topic, error.message);
     }
   }
 
   unsubscribe(topic: string): void {
-    this.client.unsubscribe(topic);
-    this.savedSubscriptions = this.savedSubscriptions.filter(
-      (sub) => sub !== topic,
-    );
-    this.updateAndSaveSubscriptions(this.savedSubscriptions);
+    try {
+      this.client.unsubscribe(topic);
+
+      this.savedSubscriptions = this.savedSubscriptions.filter(
+        (sub) => sub !== topic,
+      );
+
+      this.updateAndSaveSubscriptions(this.savedSubscriptions);
+
+      console.log(`Unsubscribed from topic ${topic}.`);
+    } catch (error) {
+      throw new MqttUnsubscribeError(topic, error.message);
+    }
   }
 
   onModuleDestroy(): void {
