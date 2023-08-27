@@ -1,0 +1,8 @@
+{
+    "subscriptions": [
+        "sensors/temperature",
+        "sensors/humidity",
+        "sensors/luminosity",
+        "sensors/soil"
+    ]
+}
