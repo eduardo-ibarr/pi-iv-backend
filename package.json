@@ -29,6 +29,7 @@
     "@nestjs/platform-socket.io": "^10.2.2",
     "@nestjs/websockets": "^10.2.2",
     "@types/socket.io": "^3.0.2",
+    "helmet": "^7.0.0",
     "mqtt": "^5.0.3",
     "passport-http": "^0.3.0",
     "reflect-metadata": "^0.1.13",
