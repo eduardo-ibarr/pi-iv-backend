@@ -1,10 +1,10 @@
-// src/app.module.ts
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { MqttModule } from './mqtt/mqtt.module';
 import { ConfigModule } from '@nestjs/config';
 import { auth, mqtt } from './config';
 import { AuthModule } from './auth/auth.module';
+import { SensorsModule } from './sensors/sensors.module';
 
 @Module({
   imports: [
@@ -15,6 +15,7 @@ import { AuthModule } from './auth/auth.module';
       load: [mqtt, auth],
     }),
     AuthModule,
+    SensorsModule,
   ],
   controllers: [AppController],
 })
