@@ -23,17 +23,20 @@
     "@nestjs/common": "^10.0.0",
     "@nestjs/config": "^3.0.0",
     "@nestjs/core": "^10.0.0",
+    "@nestjs/mapped-types": "*",
     "@nestjs/microservices": "^10.2.1",
     "@nestjs/passport": "^10.0.1",
     "@nestjs/platform-express": "^10.0.0",
     "@nestjs/platform-socket.io": "^10.2.2",
     "@nestjs/websockets": "^10.2.2",
     "@types/socket.io": "^3.0.2",
+    "@types/uuid": "^9.0.3",
     "helmet": "^7.0.0",
     "mqtt": "^5.0.3",
     "passport-http": "^0.3.0",
     "reflect-metadata": "^0.1.13",
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.1",
+    "uuid": "^9.0.0"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.0.0",
