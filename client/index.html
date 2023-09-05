@@ -1,6 +1,6 @@
 <html>
   <head>
-    <title>Sei la</title>
+    <title>sensors</title>
     <script
       src="https://cdn.socket.io/4.3.2/socket.io.min.js"
       integrity="sha384-KAZ4DtjNhLChOB/hxXuKqhMLYvx3b5MlT55xPEiNmREKRzeEm+RVPlTnAn0ajQNs"
@@ -9,21 +9,39 @@
   </head>
 
   <body>
-    <h1 id="umidade">Umidade:</h1>
+    <h1 id="umidade-ar">Umidade do Ar:</h1>
+    <h1 id="umidade-solo">Umidade do Solo:</h1>
+    <h1 id="temperatura">Temperatura:</h1>
 
     <script>
-      const socket = io('http://localhost:8080/sensors');
-      const umidadeElement = document.getElementById('umidade');
+      const socket = io('http://localhost:8080');
+      const umidadeArElement = document.getElementById('umidade-ar');
+      const umidadeSoloElement = document.getElementById('umidade-solo');
+      const temperaturaElement = document.getElementById('temperatura');
 
       socket.on('connect', function () {
         console.log('Connected');
-
-        socket.emit('sensors', { umidade: 0 });
       });
 
-      socket.on('sensors', function (data) {
+      socket.on('sensors/air-moisture', function (data) {
         console.log('event', data);
-        umidadeElement.textContent = `Umidade: ${data.umidade}`;
+        umidadeArElement.textContent = `Umidade do Ar: ${
+          JSON.parse(data).value
+        }%`;
+      });
+
+      socket.on('sensors/soil-moisture', function (data) {
+        console.log('event', data);
+        umidadeSoloElement.textContent = `Umidade do Solo: ${
+          JSON.parse(data).value
+        }%`;
+      });
+
+      socket.on('sensors/temperature', function (data) {
+        console.log('event', data);
+        temperaturaElement.textContent = `Temperatura: ${JSON.parse(
+          data,
+        ).value.toFixed(2)}°C`;
       });
 
       socket.on('exception', function (data) {
