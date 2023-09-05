@@ -4,7 +4,8 @@ import { MqttModule } from './mqtt/mqtt.module';
 import { ConfigModule } from '@nestjs/config';
 import { auth, mqtt } from './config';
 import { AuthModule } from './auth/auth.module';
-import { SensorsModule } from './sensors/sensors.module';
+import { DataModule } from './data/data.module';
+import { WebsocketsModule } from './websockets/websockets.module';
 
 @Module({
   imports: [
@@ -15,7 +16,8 @@ import { SensorsModule } from './sensors/sensors.module';
       load: [mqtt, auth],
     }),
     AuthModule,
-    SensorsModule,
+    DataModule,
+    WebsocketsModule,
   ],
   controllers: [AppController],
 })
