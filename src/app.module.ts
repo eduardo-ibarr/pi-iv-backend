@@ -6,6 +6,7 @@ import { auth, mqtt } from './config';
 import { AuthModule } from './auth/auth.module';
 import { DataModule } from './data/data.module';
 import { WebsocketsModule } from './websockets/websockets.module';
+import { PrismaService } from './prisma/prisma.service';
 
 @Module({
   imports: [
@@ -20,5 +21,6 @@ import { WebsocketsModule } from './websockets/websockets.module';
     WebsocketsModule,
   ],
   controllers: [AppController],
+  providers: [PrismaService],
 })
 export class AppModule {}
