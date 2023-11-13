@@ -8,27 +8,13 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Sensor {
-  id         Int      @id @default(autoincrement())
-  name       String
-  date       DateTime
-  value      Float
-  created_at DateTime @default(now())
-  updated_at DateTime @default(now())
-
-  Reading Reading[]
-
-  @@map("sensors")
-}
-
 model Reading {
   id         Int      @id @default(autoincrement())
   value      Float
-  sensor_id  Int
+  time_type  String
+  sensor     String
   created_at DateTime @default(now())
   updated_at DateTime @default(now())
-
-  sensor Sensor? @relation(fields: [sensor_id], references: [id])
 
   @@map("readings")
 }

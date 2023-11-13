@@ -54,7 +54,7 @@ export class MqttService {
     });
   }
 
-  subscribe(topic: string, callback: (data: any) => void): void {
+  subscribe<T>(topic: string, callback: (data: T) => void): void {
     try {
       this.client.subscribe(topic);
       this.logger.log(`Subscribed to topic ${topic}.`);
@@ -62,7 +62,7 @@ export class MqttService {
       this.client.on('message', (topicReceived, message) => {
         if (topic === topicReceived) {
           this.logger.log(`Message received from topic ${topic}...`);
-          callback(message.toString());
+          callback(message.toString() as T);
         }
       });
     } catch (error) {

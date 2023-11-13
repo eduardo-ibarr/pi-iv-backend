@@ -9,7 +9,6 @@ import {
 import { Logger } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { subscriptions } from 'src/config/constants/subscriptions';
-import { Sensor } from './entity/sensor';
 
 @WebSocketGateway(8080, {
   cors: {
@@ -32,20 +31,22 @@ export class WebsocketsGateway
   }
 
   @SubscribeMessage('air-moisture')
-  sendAirMoistureDataToWeb(@MessageBody() data: Sensor) {
-    this.logger.log(`Sending message to ${subscriptions.airMoisture}...`);
+  sendAirMoistureDataToWeb(@MessageBody() data: string) {
     this.server.emit(subscriptions.airMoisture, data);
   }
 
   @SubscribeMessage('soil-moisture')
-  sendSoilMoistureDataToWeb(@MessageBody() data: Sensor) {
-    this.logger.log(`Sending message to ${subscriptions.soilMoisture}...`);
+  sendSoilMoistureDataToWeb(@MessageBody() data: string) {
     this.server.emit(subscriptions.soilMoisture, data);
   }
 
   @SubscribeMessage('temperature')
-  sendTemperatureDataToWeb(@MessageBody() data: Sensor) {
-    this.logger.log(`Sending message to ${subscriptions.temperature}...`);
+  sendTemperatureDataToWeb(@MessageBody() data: string) {
     this.server.emit(subscriptions.temperature, data);
+  }
+
+  @SubscribeMessage('luminosity')
+  sendLuminosityDataToWeb(@MessageBody() data: string) {
+    this.server.emit(subscriptions.luminosity, data);
   }
 }
