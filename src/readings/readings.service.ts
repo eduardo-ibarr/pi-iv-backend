@@ -8,6 +8,7 @@ export class ReadingsService {
   private lastHourlySave: Date = new Date();
   private lastMinuteSave: Date = new Date();
   private last12HoursSave: Date = new Date();
+  private lastDaySave: Date = new Date();
 
   constructor(private readonly prismaService: PrismaService) {}
 
@@ -28,6 +29,11 @@ export class ReadingsService {
       await this.saveData(sensor, '12hours');
       this.last12HoursSave = currentTime;
     }
+
+    if (this.hasOneDayPassed(this.lastDaySave, currentTime)) {
+      await this.saveData(sensor, 'day');
+      this.lastDaySave = currentTime;
+    }
   }
 
   private hasOneHourPassed(lastSaveTime: Date, currentTime: Date): boolean {
@@ -40,6 +46,10 @@ export class ReadingsService {
 
   private hasOneMinutePassed(lastSaveTime: Date, currentTime: Date): boolean {
     return this.getTimeDifferenceInMinutes(lastSaveTime, currentTime) >= 1;
+  }
+
+  private hasOneDayPassed(lastSaveTime: Date, currentTime: Date): boolean {
+    return this.getTimeDifferenceInHours(lastSaveTime, currentTime) >= 24;
   }
 
   private getTimeDifferenceInMinutes(time1: Date, time2: Date): number {
@@ -61,8 +71,6 @@ export class ReadingsService {
           time_type,
         },
       });
-
-      console.log('Dados salvos no banco de dados:', sensor);
     } catch (error) {
       console.error('Erro ao salvar dados no banco de dados:', error);
     }
@@ -70,6 +78,12 @@ export class ReadingsService {
 
   findAll() {
     return this.prismaService.reading.findMany();
+  }
+
+  findBySensorAndTimeType(time_type: string, sensor: string) {
+    return this.prismaService.reading.findMany({
+      where: { time_type, sensor },
+    });
   }
 
   findOne(id: number) {

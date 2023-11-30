@@ -7,10 +7,12 @@ import { AuthModule } from './auth/auth.module';
 import { DataModule } from './data/data.module';
 import { WebsocketsModule } from './websockets/websockets.module';
 import { PrismaService } from './prisma/prisma.service';
+import { ReadingsModule } from './readings/readings.module';
 
 @Module({
   imports: [
     MqttModule,
+    ReadingsModule,
     ConfigModule.forRoot({
       envFilePath: '.env',
       isGlobal: true,
