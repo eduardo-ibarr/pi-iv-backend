@@ -9,6 +9,7 @@ import {
 import { Logger } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { subscriptions } from 'src/config/constants/subscriptions';
+import { MqttService } from 'src/mqtt/mqtt.service';
 
 @WebSocketGateway(8080, {
   cors: {
@@ -21,6 +22,8 @@ export class WebsocketsGateway
   @WebSocketServer()
   private server: Server;
   private logger = new Logger(WebsocketsGateway.name);
+
+  constructor(private readonly mqttService: MqttService) {}
 
   handleConnection(client: Socket) {
     this.logger.log(`CLIENT ID CONNECTED: ${client.id}`);
@@ -38,6 +41,21 @@ export class WebsocketsGateway
   @SubscribeMessage('soil-moisture')
   sendSoilMoistureDataToWeb(@MessageBody() data: string) {
     this.server.emit(subscriptions.soilMoisture, data);
+  }
+
+  @SubscribeMessage('irrigator-status')
+  sendIrrigatorStatusToWeb(@MessageBody() data: string) {
+    this.server.emit(subscriptions.irrigationStatus, data);
+  }
+
+  @SubscribeMessage('irrigator-control')
+  sendIrrigatorControlToMQTT(@MessageBody() data: string) {
+    this.mqttService.publish(subscriptions.irrigationControl, data);
+  }
+
+  @SubscribeMessage('irrigator-action')
+  sendIrrigatorActionToMQTT(@MessageBody() data: string) {
+    this.mqttService.publish(subscriptions.irrigationAction, data);
   }
 
   @SubscribeMessage('temperature')

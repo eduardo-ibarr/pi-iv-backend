@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { subscriptions } from 'src/config/constants/subscriptions';
 import { MqttService } from 'src/mqtt/mqtt.service';
 import { ReadingsService } from 'src/readings/readings.service';
-import { Sensor } from 'src/websockets/entity/sensor';
 import { WebsocketsGateway } from 'src/websockets/websockets.gateway';
 
 @Injectable()
@@ -16,76 +15,92 @@ export class DataService {
     this.handleSoilMoistureSensorData();
     this.handleTemperatureSensorData();
     this.handleLuminositySensorData();
+    this.handleIrrigatorStatusData();
+  }
+
+  private handleIrrigatorStatusData(): void {
+    this.mqttService.subscribe<string>(
+      subscriptions.irrigationStatus,
+      (data) => {
+        this.websocketGateway.sendIrrigatorStatusToWeb(data);
+      },
+    );
   }
 
   private handleAirMoistureSensorData(): void {
     this.mqttService.subscribe<string>(subscriptions.airMoisture, (data) => {
-      this.websocketGateway.sendAirMoistureDataToWeb(data);
+      const dataParsed = JSON.parse(data);
 
-      if (data) {
-        const sensorData: Sensor = JSON.parse(data);
+      dataParsed.date = new Date();
 
-        if (sensorData) {
-          this.readingsService.handleData({
-            airMoisture: sensorData.airMoisture,
-          });
-        } else {
-          console.error('Dados do sensor inválidos ou incompletos:', data);
-        }
+      this.websocketGateway.sendAirMoistureDataToWeb(
+        JSON.stringify(dataParsed),
+      );
+
+      if (data && dataParsed) {
+        this.readingsService.handleData({
+          airMoisture: dataParsed.airMoisture,
+        });
+      } else {
+        console.error('Dados do sensor inválidos ou incompletos:', data);
       }
     });
   }
 
   private handleSoilMoistureSensorData(): void {
     this.mqttService.subscribe<string>(subscriptions.soilMoisture, (data) => {
-      this.websocketGateway.sendSoilMoistureDataToWeb(data);
+      const dataParsed = JSON.parse(data);
 
-      if (data) {
-        const sensorData: Sensor = JSON.parse(data);
+      dataParsed.date = new Date();
 
-        if (sensorData) {
-          this.readingsService.handleData({
-            soilMoisture: sensorData.soilMoisture,
-          });
-        } else {
-          console.error('Dados do sensor inválidos ou incompletos:', data);
-        }
+      this.websocketGateway.sendSoilMoistureDataToWeb(
+        JSON.stringify(dataParsed),
+      );
+
+      if (data && dataParsed) {
+        this.readingsService.handleData({
+          soilMoisture: dataParsed.soilMoisture,
+        });
+      } else {
+        console.error('Dados do sensor inválidos ou incompletos:', data);
       }
     });
   }
 
   private handleTemperatureSensorData(): void {
     this.mqttService.subscribe<string>(subscriptions.temperature, (data) => {
-      this.websocketGateway.sendTemperatureDataToWeb(data);
+      const dataParsed = JSON.parse(data);
 
-      if (data) {
-        const sensorData: Sensor = JSON.parse(data);
+      dataParsed.date = new Date();
 
-        if (sensorData) {
-          this.readingsService.handleData({
-            temperature: sensorData.temperature,
-          });
-        } else {
-          console.error('Dados do sensor inválidos ou incompletos:', data);
-        }
+      this.websocketGateway.sendTemperatureDataToWeb(
+        JSON.stringify(dataParsed),
+      );
+
+      if (data && dataParsed) {
+        this.readingsService.handleData({
+          temperature: dataParsed.temperature,
+        });
+      } else {
+        console.error('Dados do sensor inválidos ou incompletos:', data);
       }
     });
   }
 
   private handleLuminositySensorData(): void {
     this.mqttService.subscribe<string>(subscriptions.luminosity, (data) => {
-      this.websocketGateway.sendLuminosityDataToWeb(data);
+      const dataParsed = JSON.parse(data);
 
-      if (data) {
-        const sensorData: Sensor = JSON.parse(data);
+      dataParsed.date = new Date();
 
-        if (sensorData) {
-          this.readingsService.handleData({
-            luminosity: sensorData.luminosity,
-          });
-        } else {
-          console.error('Dados do sensor inválidos ou incompletos:', data);
-        }
+      this.websocketGateway.sendLuminosityDataToWeb(JSON.stringify(dataParsed));
+
+      if (data && dataParsed) {
+        this.readingsService.handleData({
+          luminosity: dataParsed.luminosity,
+        });
+      } else {
+        console.error('Dados do sensor inválidos ou incompletos:', data);
       }
     });
   }
